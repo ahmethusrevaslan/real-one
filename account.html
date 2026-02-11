@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hesabım — ANYWAY</title>
+    <link rel="icon" type="image/png" href="brand-logo.png">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+
+
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="nav fade-in" style="background: rgba(0,0,0,0.8); backdrop-filter: blur(20px);">
+        <div class="nav-left">
+            <a href="index.html" class="nav-brand-text">ANYWAY</a>
+        </div>
+
+        <div class="nav-center">
+            <a href="products.html" class="nav-link-center">KOLEKSİYON</a>
+            <a href="about.html" class="nav-link-center">HAKKINDA</a>
+            <a href="contact.html" class="nav-link-center">İLETİŞİM</a>
+        </div>
+
+        <div class="nav-right">
+            <!-- Auth Link -->
+            <a href="login.html" id="auth-link" class="nav-icon-btn" aria-label="Account">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </a>
+
+            <button class="nav-icon-btn" onclick="openCart()">
+                SEPET <span id="cart-count"></span>
+            </button>
+        </div>
+
+        <button class="mobile-menu-btn" aria-label="Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </nav>
+
+    <div class="account-layout" style="padding-top: 80px;">
+        <aside class="account-sidebar">
+            <!-- Removed Logo from sidebar to avoid duplication -->
+            <nav class="sidebar-menu" style="margin-top: 40px;">
+                <a href="#" class="sidebar-link active" onclick="showSection('favorites')">Favorilerim</a>
+                <a href="#" class="sidebar-link" onclick="showSection('orders')">Siparişlerim</a>
+                <a href="#" class="sidebar-link" onclick="showSection('settings')">Ayarlar</a>
+                <br><br>
+                <a href="#" class="sidebar-link logout" onclick="authService.logout()">Çıkış Yap</a>
+            </nav>
+        </aside>
+
+        <main class="account-content">
+            <div class="account-header">
+                <h1 class="welcome-text">Hoş geldin, <span id="user-name">...</span></h1>
+                <p class="email-text" id="user-email">...</p>
+            </div>
+
+            <div id="favorites-section">
+                <h2 style="font-size:18px; margin-bottom:24px; font-weight:400;">Kayıtlı Parçalar</h2>
+                <div class="favorites-grid" id="favorites-list">
+                    <!-- JS Populated -->
+                    <div class="empty-state">Yükleniyor...</div>
+                </div>
+            </div>
+
+            <div id="orders-section" style="display:none;">
+                <h2 style="font-size:18px; margin-bottom:24px; font-weight:400;">Sipariş Geçmişi</h2>
+                <div id="orders-list">
+                    <div class="empty-state">Yükleniyor...</div>
+                </div>
+            </div>
+
+            <div id="settings-section" style="display:none;">
+                <h2 style="font-size:18px; margin-bottom:24px; font-weight:400;">Hesap Ayarları</h2>
+                <p style="color:var(--text-muted);">Şu an değiştirilebilir ayar bulunmuyor.</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/data.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/favorites.js"></script>
+    <script>
+        // Check Auth
+        if (!authService.isLoggedIn()) {
+            window.location.href = 'login.html';
+        }
+
+        const user = authService.getCurrentUser();
+        if (user) {
+            document.getElementById('user-name').textContent = user.name;
+            document.getElementById('user-email').textContent = user.email;
+        }
+
+        // Render Favorites
+        function renderFavorites() {
+            const list = document.getElementById('favorites-list');
+            const favIds = favoritesManager.getAll();
+
+            if (favIds.length === 0) {
+                list.innerHTML = '<div class="empty-state">Henüz favori ürününüz yok.</div>';
+                return;
+            }
+
+            if (typeof products === 'undefined') return;
+
+            const favProducts = products.filter(p => favIds.includes(p.id));
+
+            list.innerHTML = favProducts.map(p => `
+                <div class="product-card">
+                    <div class="product-card-image" style="height:300px; margin-bottom:16px;">
+                        <img src="${p.image}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">
+                    </div>
+                    <div class="product-card-info">
+                        <div>
+                            <h3 style="font-size:16px; margin-bottom:4px;">${p.title}</h3>
+                            <p style="color:#888; font-size:14px;">${p.price} TL</p>
+                        </div>
+                        <button onclick="removeFav('${p.id}')" style="background:none; border:none; color:#ff4444; cursor:pointer;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Orders
+        function renderOrders() {
+            const list = document.getElementById('orders-list');
+            const orders = authService.getOrders();
+
+            if (orders.length === 0) {
+                list.innerHTML = '<div class="empty-state">Henüz siparişiniz bulunmuyor.</div>';
+                return;
+            }
+
+            list.innerHTML = orders.map(order => `
+                <div style="border:1px solid #333; padding:24px; margin-bottom:24px; border-radius:8px; background:#0f0f0f;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid #222;">
+                        <div>
+                            <div style="font-size:12px; color:#888; text-transform:uppercase;">Sipariş No</div>
+                            <div style="font-weight:600; color:#E2B66A;">${order.id}</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-size:12px; color:#888; text-transform:uppercase;">Tarih</div>
+                            <div>${new Date(order.date).toLocaleDateString('tr-TR')}</div>
+                        </div>
+                    </div>
+                    
+                    <div style="display:flex; gap:16px; margin-bottom:16px; overflow-x:auto;">
+                        ${order.items.map(item => `
+                            <img src="${item.image}" style="width:60px; height:80px; object-fit:cover; border-radius:4px;" title="${item.title}">
+                        `).join('')}
+                    </div>
+                    
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+                        <span style="font-size:14px; padding:4px 12px; background:#222; border-radius:4px; color:#aaa;">${order.status}</span>
+                        <div style="font-weight:600;">Toplam: ${new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(order.total)}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function removeFav(id) {
+            favoritesManager.remove(id);
+            renderFavorites();
+        }
+
+        // Navigation
+        function showSection(id) {
+            document.getElementById('favorites-section').style.display = 'none';
+            document.getElementById('orders-section').style.display = 'none';
+            document.getElementById('settings-section').style.display = 'none';
+
+            document.getElementById(id + '-section').style.display = 'block';
+
+            document.querySelectorAll('.sidebar-link').forEach(el => el.classList.remove('active'));
+            // Manually checking for now, normally would pass 'this'
+        }
+
+        // Init
+        renderFavorites();
+        renderOrders();
+    </script>
+</body>
+
+</html>

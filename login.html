@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giriş Yap — ANYWAY</title>
+    <link rel="icon" type="image/png" href="brand-logo.png">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+
+    <div class="auth-card">
+        <a href="index.html" class="auth-logo">ANYWAY</a>
+
+        <!-- Login View -->
+        <div id="login-view">
+            <h1 class="auth-title">Giriş Yap</h1>
+            <p class="auth-subtitle">Hesabınıza erişmek için bilgilerinizi girin.</p>
+
+            <form id="login-form" class="auth-form">
+                <div class="form-error" id="login-error"></div>
+
+                <div class="input-group">
+                    <input type="email" id="login-email" class="input-field" placeholder="E-posta" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="login-password" class="input-field" placeholder="Şifre" required>
+                </div>
+
+                <button type="submit" class="btn-primary">DEVAM ET</button>
+            </form>
+
+            <div class="divider"><span>veya</span></div>
+
+            <p class="toggle-text">Hesabınız yok mu? <button class="toggle-link" onclick="toggleView('register')">Kayıt
+                    Ol</button></p>
+        </div>
+
+        <!-- Register View -->
+        <div id="register-view" style="display: none;">
+            <h1 class="auth-title">Hesap Oluştur</h1>
+            <p class="auth-subtitle">Sipariş takibi ve favoriler için katılın.</p>
+
+            <form id="register-form" class="auth-form">
+                <div class="form-error" id="reg-error"></div>
+
+                <div class="input-group">
+                    <input type="text" id="reg-name" class="input-field" placeholder="Ad Soyad" required>
+                </div>
+                <div class="input-group">
+                    <input type="email" id="reg-email" class="input-field" placeholder="E-posta" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="reg-password" class="input-field" placeholder="Şifre" required>
+                </div>
+
+                <button type="submit" class="btn-primary">KAYIT OL</button>
+            </form>
+
+            <div class="divider"><span>veya</span></div>
+
+            <p class="toggle-text">Zaten üye misiniz? <button class="toggle-link" onclick="toggleView('login')">Giriş
+                    Yap</button></p>
+        </div>
+    </div>
+
+    <div class="page-footer">
+        <a href="legal.html#privacy">Gizlilik</a>
+        <a href="legal.html#terms">Şartlar</a>
+    </div>
+
+    <!-- Verification Modal -->
+    <div id="verify-modal"
+        style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:2000; align-items:center; justify-content:center;">
+        <div style="background:#fff; padding:40px; max-width:400px; width:90%; text-align:center; border-radius:4px;">
+            <div style="font-size:48px; margin-bottom:16px;">✉️</div>
+            <h2 style="font-size:24px; margin-bottom:16px; color:#000;">E-posta Doğrulama</h2>
+            <p style="color:#666; margin-bottom:24px; line-height:1.5;">
+                <strong id="verify-email-text"></strong> adresine bir doğrulama bağlantısı gönderdik. Lütfen kutunuzu
+                kontrol edin.
+            </p>
+            <button onclick="simulateVerification()" class="btn-primary" style="width:100%;">
+                DOĞRULAMA LİNKİNE TIKLA (SİMÜLASYON)
+            </button>
+            <button onclick="document.getElementById('verify-modal').style.display='none'"
+                style="margin-top:16px; background:none; border:none; color:#999; cursor:pointer; text-decoration:underline;">Kapat</button>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script>
+        // Redirect if logged in
+        if (authService.isLoggedIn()) {
+            window.location.href = 'account.html';
+        }
+
+        // View Toggling
+        function toggleView(view) {
+            document.getElementById('login-view').style.display = view === 'login' ? 'block' : 'none';
+            document.getElementById('register-view').style.display = view === 'register' ? 'block' : 'none';
+        }
+
+        // Login Logic
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-password').value;
+            const error = document.getElementById('login-error');
+            const btn = e.target.querySelector('button');
+
+            btn.classList.add('loading');
+            btn.textContent = 'GİRİŞ YAPILIYOR...';
+
+            setTimeout(() => {
+                const result = authService.login(email, pass);
+                if (result.success) {
+                    window.location.href = 'account.html';
+                } else {
+                    error.textContent = result.message;
+                    error.style.display = 'block';
+                    btn.classList.remove('loading');
+                    btn.textContent = 'DEVAM ET';
+                }
+            }, 800);
+        });
+
+        // Register Logic
+        document.getElementById('register-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            const pass = document.getElementById('reg-password').value;
+            const error = document.getElementById('reg-error');
+            const btn = e.target.querySelector('button');
+
+            btn.classList.add('loading');
+            btn.textContent = 'OLUŞTURULUYOR...';
+
+            setTimeout(() => {
+                const result = authService.register(name, email, pass);
+                btn.classList.remove('loading');
+                btn.textContent = 'KAYIT OL'; // Reset button
+
+                if (result.success && result.requiresVerification) {
+                    // Show Verification Modal
+                    document.getElementById('verify-email-text').textContent = result.email;
+                    document.getElementById('verify-modal').style.display = 'flex';
+                } else if (!result.success) {
+                    error.textContent = result.message;
+                    error.style.display = 'block';
+                }
+            }, 800);
+        });
+
+        // Simulating Email Click
+        function simulateVerification() {
+            const email = document.getElementById('verify-email-text').textContent;
+            window.location.href = 'index.html?verify_email=' + encodeURIComponent(email);
+        }
+    </script>
+</body>
+
+</html>

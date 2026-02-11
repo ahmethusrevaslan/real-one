@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Koleksiyon — ANYWAY</title>
+    <meta name="description"
+        content="ANYWAY Koleksiyonu. Özenle seçilmiş çağdaş sanat eserleri, kanvas tablolar ve aynalar.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <!-- Navigation -->
+    <nav class="nav fade-in" style="background: rgba(0,0,0,0.8); backdrop-filter: blur(20px);">
+        <div class="nav-left">
+            <a href="index.html" class="nav-brand-text">ANYWAY</a>
+        </div>
+
+        <div class="nav-center">
+            <a href="products.html" class="nav-link-center">KOLEKSİYON</a>
+            <a href="about.html" class="nav-link-center">HAKKINDA</a>
+            <a href="contact.html" class="nav-link-center">İLETİŞİM</a>
+        </div>
+
+        <div class="nav-right">
+            <!-- Auth Link -->
+            <a href="login.html" id="auth-link" class="nav-icon-btn" aria-label="Account">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </a>
+
+            <button class="nav-icon-btn" onclick="openCart()">
+                SEPET <span id="cart-count"></span>
+            </button>
+        </div>
+
+        <button class="mobile-menu-btn" aria-label="Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <h1 class="page-title">Koleksiyon</h1>
+        <p class="page-subtitle">Özenle seçilmiş çağdaş sanat eserleri. Her parça, mekanınıza karakter ve derinlik
+            katmak için tasarlandı.</p>
+    </section>
+
+    <!-- Filters -->
+    <!-- Filters & Sort -->
+    <section class="filter-section" style="justify-content:space-between; gap:40px;">
+        <div class="filter-tabs">
+            <button class="filter-tab active" data-filter="all">Tümü</button>
+            <button class="filter-tab" data-filter="canvas">Kanvas</button>
+            <button class="filter-tab" data-filter="mirror">Ayna</button>
+            <button class="filter-tab" data-filter="mixed">Mixed</button>
+        </div>
+
+        <div class="filter-actions">
+            <select id="sort-select" class="sort-dropdown">
+                <option value="newest">Yeniden Eskiye</option>
+                <option value="price-low">Fiyat: Düşükten Yükseğe</option>
+                <option value="price-high">Fiyat: Yüksekten Düşüğe</option>
+            </select>
+        </div>
+    </section>
+
+    <!-- Products Grid -->
+    <section class="container mb-large">
+        <div class="product-grid" id="product-grid"></div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-bottom">
+            <p>© 2026 ANYWAY. Tüm hakları saklıdır.</p>
+            <p>Statement art for modern spaces.</p>
+        </div>
+    </footer>
+
+
+    <script src="js/data.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/favorites.js"></script>
+    <script src="js/app.js"></script>
+    <!-- Removed collection.js to avoid conflicts, using inline logic -->
+
+    <script>
+        // Filter tabs
+        const filterTabs = document.querySelectorAll('.filter-tab');
+        filterTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                filterTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                filterProducts(tab.dataset.filter);
+            });
+        });
+
+        function filterProducts(category) {
+            const cards = document.querySelectorAll('.product-card');
+            let count = 0;
+            cards.forEach(card => {
+                const show = category === 'all' || card.dataset.category === category;
+                card.style.display = show ? 'block' : 'none';
+                if (show) count++;
+            });
+            document.getElementById('product-count').textContent = count;
+        }
+
+        // Render products
+        function renderProducts() {
+            const grid = document.getElementById('product-grid');
+            if (!grid || typeof products === 'undefined') return;
+
+            grid.innerHTML = products.map((p, i) => {
+                // Uniform grid classes
+                let gridClass = 'editorial-item';
+
+                const badge = p.status !== 'Available'
+                    ? `<span class="product-badge sold">${p.status.toUpperCase()}</span>`
+                    : p.featured ? `<span class="product-badge">Featured</span>` : '';
+
+                return `
+                    <div class="product-card ${gridClass}" data-category="${p.category}">
+                        <div class="card-image-wrapper">
+                            <button class="btn-fav ${favoritesManager.has(p.id) ? 'active' : ''}"
+                                onclick="toggleFav(event, '${p.id}')"
+                                aria-label="Add to favorites">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                </svg>
+                            </button>
+                            <a href="product-detail.html?id=${p.id}" style="display:block; height:100%;">
+                                ${badge}
+                                <img src="${p.image}" alt="${p.title}" class="card-image" loading="lazy">
+                            </a>
+                        </div>
+                        <div class="product-card-info">
+                            <div>
+                                <h3 class="product-card-title">${p.title}</h3>
+                                <div class="product-card-category">${p.category}</div>
+                            </div>
+                            <div class="product-card-price">${formatPrice(p.price)}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            `;
+            }).join('');
+
+            document.getElementById('product-count').textContent = products.length;
+
+            document.getElementById('product-count').textContent = products.length;
+
+            // Re-trigger layout if using Masonry (not used here)
+        }
+
+        // Toggle Favorite
+        function toggleFav(e, id) {
+            e.preventDefault(); 
+            e.stopPropagation();
+            const btn = e.currentTarget;
+            
+            const isAdded = favoritesManager.toggle(id);
+            if (isAdded) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        }
+        
+        // Update Auth Link on Load
+        document.addEventListener('DOMContentLoaded', () => {
+            const authLink = document.getElementById('auth-link');
+            if(authService.isLoggedIn()) {
+                authLink.href = 'account.html';
+            } else {
+                authLink.href = 'login.html';
+            }
+        });
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const id = this.getAttribute('href');
+                if (id === '#') return;
+                const target = document.querySelector(id);
+                if (target) {
+                    e.preventDefault();
+                    window.scrollTo({
+                        top: target.offsetTop - 100,
+                        behavior: 'smooth'
+                    });
+                    history.pushState(null, null, id);
+                }
+            });
+        });
+
+        // Hash load
+        if (window.location.hash) {
+            const target = document.querySelector(window.location.hash);
+            if (target) {
+                setTimeout(() => {
+                    window.scrollTo({ top: target.offsetTop - 100, behavior: 'smooth' });
+                }, 100);
+            }
+        }
+
+        // Initialize with filter from URL
+        document.addEventListener('DOMContentLoaded', () => {
+            renderProducts(); // Ensure products are rendered first
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const category = urlParams.get('category');
+
+            if (category) {
+                // Activate tab
+                filterTabs.forEach(t => t.classList.remove('active'));
+                const targetTab = document.querySelector(`.filter - tab[data - filter="${category}"]`);
+                if (targetTab) {
+                    targetTab.classList.add('active');
+                }
+
+                // Apply filter
+                // Use setTimeout to allow render to complete if async (though it's sync here)
+                setTimeout(() => filterProducts(category), 50);
+            }
+        });
+
+
+    </script>
+</body>
+
+</html>

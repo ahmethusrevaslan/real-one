@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ANYWAY — Ürün Detay</title>
+    <meta name="description" content="ANYWAY — Statement art for modern spaces.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+
+
+</head>
+
+<body>
+
+    <!-- Standard Header -->
+    <nav class="nav fade-in" style="background: rgba(0,0,0,0.8); backdrop-filter: blur(20px);">
+        <div class="nav-left">
+            <a href="index.html" class="nav-brand-text">ANYWAY</a>
+        </div>
+        <div class="nav-center">
+            <a href="products.html" class="nav-link-center">KOLEKSİYON</a>
+        </div>
+        <div class="nav-right">
+            <a href="login.html" id="auth-link" class="nav-icon-btn"><svg width="20" height="20" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg></a>
+            <button class="nav-icon-btn" onclick="openCart()">SEPET <span id="cart-count"></span></button>
+        </div>
+    </nav>
+
+    <main class="product-detail-container">
+        <!-- Left: Image -->
+        <div class="product-image-wrapper">
+            <img src="" alt="" id="main-image">
+        </div>
+
+        <!-- Right: Info -->
+        <div class="product-info-wrapper">
+            <a href="products.html" class="detail-back-link">← KOLEKSİYONA DÖN</a>
+
+            <div class="detail-category" id="detail-category"></div>
+            <h1 class="product-title-large" id="detail-title">Yükleniyor...</h1>
+            <div class="product-price-large" id="detail-price"></div>
+
+            <p class="product-desc" id="detail-desc"></p>
+
+            <button class="add-to-cart-btn" id="add-to-cart-btn">SEPETE EKLE</button>
+
+            <div class="specs-list">
+                <div class="spec-item">
+                    <span style="color:var(--text-muted)">BOYUTLAR</span>
+                    <span id="spec-dim"></span>
+                </div>
+                <div class="spec-item">
+                    <span style="color:var(--text-muted)">MALZEME</span>
+                    <span id="spec-mat"></span>
+                </div>
+                <div class="spec-item">
+                    <span style="color:var(--text-muted)">ÇERÇEVE</span>
+                    <span id="spec-frame"></span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" style="border-top:1px solid var(--border); padding:60px; background:#000;">
+        <div style="text-align:center; font-size:12px; color:var(--text-muted);">
+            © 2026 ANYWAY.
+        </div>
+    </footer>
+
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/favorites.js"></script>
+    <script src="js/auth.js"></script>
+
+    <script>
+        function initDetail() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('id');
+
+            if (!productId || typeof products === 'undefined') {
+                window.location.href = 'products.html';
+                return;
+            }
+
+            const product = products.find(p => p.id === productId);
+            if (!product) {
+                window.location.href = 'products.html';
+                return;
+            }
+
+            document.title = `${product.title} — ANYWAY`;
+            document.getElementById('main-image').src = product.image;
+            document.getElementById('detail-category').textContent = product.category;
+            document.getElementById('detail-title').textContent = product.title;
+            document.getElementById('detail-price').textContent = formatPrice(product.price);
+            document.getElementById('detail-desc').textContent = product.description;
+            document.getElementById('spec-dim').textContent = product.dimensions;
+            document.getElementById('spec-mat').textContent = product.material;
+            document.getElementById('spec-frame').textContent = product.frame;
+
+            const addBtn = document.getElementById('add-to-cart-btn');
+            if (product.status !== 'Available') {
+                addBtn.textContent = 'SATILDI';
+                addBtn.disabled = true;
+                addBtn.style.background = '#333';
+                addBtn.style.color = '#888';
+            } else {
+                addBtn.onclick = () => {
+                    addToCart(product);
+                    openCart();
+                };
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initDetail);
+    </script>
+</body>
+
+</html>
