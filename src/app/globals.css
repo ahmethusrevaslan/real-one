@@ -1,0 +1,105 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* Colors */
+  --color-bg-primary: #000000;
+  --color-bg-secondary: #0A0A0A;
+  --color-bg-tertiary: #111111;
+  --color-accent: #FFFFFF;
+  --color-error: #cc0000;
+  --color-gold-light: #F3E5AB;
+  --color-gold: #E2B66A;
+  --color-gold-dark: #B8860B;
+
+  /* Font Family */
+  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: var(--font-syne), sans-serif;
+
+  /* Animations */
+  --animate-fade-up: fade-up 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  --animate-fade-in: fade-in 1s forwards;
+  --animate-scroll-down: scroll-down 2s infinite;
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes scroll-down {
+    0% { transform-origin: top; transform: scaleY(0); }
+    50% { transform: scaleY(1); }
+    51% { transform-origin: bottom; }
+    100% { transform-origin: bottom; transform: scaleY(0); }
+  }
+}
+
+/* Reset */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html, body {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #000;
+  color: #fff;
+  overflow-x: hidden;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Word Rotator - Gold Gradient Text */
+.word-gradient {
+  background: linear-gradient(135deg, #F3E5AB 0%, #E2B66A 50%, #B8860B 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glow Card Effect */
+.glow-card {
+  --glow-spread: 40;
+  --glow-start: 0;
+  --glow-active: 0;
+}
+
+.glow-card .glow-effect::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 2px solid transparent;
+  background: conic-gradient(
+    from calc(var(--glow-start, 0) * 1deg) at 50% 50%,
+    transparent 0deg,
+    rgb(60, 50, 140) 15deg,
+    rgb(120, 70, 180) 45deg,
+    rgb(80, 150, 160) 90deg,
+    rgb(100, 120, 140) 135deg,
+    rgb(60, 50, 140) 165deg,
+    transparent 180deg
+  ) border-box;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) padding-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) padding-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  opacity: var(--glow-active, 0);
+  transition: opacity 0.2s ease-out;
+}
